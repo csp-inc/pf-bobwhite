@@ -39,3 +39,6 @@ vignettes/*.pdf
 .Renviron
 code/.DS_Store
 .DS_Store
+
+# Folders to ignore 
+data/
