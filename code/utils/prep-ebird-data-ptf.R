@@ -4,8 +4,8 @@ library(lubridate)
 library(sf)
 
 # Read species detection data ("ebd") and the sampling effort dataset into auk
-ebd <- auk_ebd("data/ebird/ebd_all_sp_relNov-2021.txt", 
-               file_sampling = "data/ebird/ebd_sampling_relNov-2021.txt")
+ebd <- auk_ebd("data/ebird/ebd_US_norbob_relDec-2022/ebd_US_norbob_relDec-2022.txt", 
+               file_sampling = "data/ebird/ebd_sampling_relDec-2022/ebd_sampling_relDec-2022.txt")
 
 # Filter based on survey protocol and to only include complete check lists
 ebd_filters <- ebd %>% 
@@ -14,8 +14,8 @@ ebd_filters <- ebd %>%
   auk_complete()
 
 # Run filtering
-f_ebd <- file.path("data/ebird/ebd_all_sp_us_filtered.txt")
-f_sampling <- file.path("data/ebird/ebd_checklists_us_filtered.txt")
+f_ebd <- file.path("data/ebird/ebd_filtered/ebd_US_norbob_us_filtered.txt")
+f_sampling <- file.path("data/ebird/ebd_filtered/ebd_checklists_us_filtered.txt")
 
 # only run if the files don't already exist
 if (!file.exists(f_ebd)) {
@@ -66,7 +66,7 @@ ebird <- ebd_zf_filtered %>%
          time_observations_started, start_time_dec,
          duration_minutes, effort_distance_km,
          number_observers)
-# write_csv(ebird, "data/ebird/ebd_all_sp_zf_final_20220106.csv", na = "")
+ write_csv(ebird, "data/ebird/ebd_norbo_zf_final_20230127.csv", na = "")
 
 # Remove intermediate datasets
 rm(ebd_zf_filtered)
@@ -76,12 +76,8 @@ rm(ebd_zf)
 # Create species-level datasets and apply spatial filter based on range maps
 
 # Get species range polygons
-ambd_range <- st_read(dsn = 'data/focal-species-range-maps/black-duck-iucn-range',
-                      layer = 'ambd_union_range')
-sagr_range <- st_read(dsn = 'data/focal-species-range-maps/sage-grouse-iucn-range',
-                      layer = 'sagr_union_range')
-bobo_range <- st_read(dsn = 'data/focal-species-range-maps/bobolink-iucn-range',
-                      layer = 'bobo_union_range')
+norbo_range <- st_read(dsn = '/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/bobwhite-range-maps/',
+                      layer = 'norbo_buff_7km')
 
 # Get spatial versions of ebird dataset
 ebird <- st_as_sf(ebird, coords = c('longitude','latitude')) 
@@ -96,47 +92,27 @@ spFilter <- function(data, poly, sp){
   return(out)
 }
 
-ambd_data <- spFilter(ebird, ambd_range, "Anas rubripes")
-sagr_data <- spFilter(ebird, sagr_range, "Centrocercus urophasianus")
-bobo_data <- spFilter(ebird, bobo_range, "Dolichonyx oryzivorus")
+norbo_data <- spFilter(ebird, ambd_range, "Colinus virginianus")
 
 # Save spatial data
-save(list = c('ambd_data', 'sagr_data', 'bobo_data'), 
-     file = 'data/ebird/ebd_sep_species_final_20220106.rda')
+save(list = c('norbo_data', 
+     file = 'data/ebird/ebd_norbo_final_20230127.rda')
 
 # Save non-spatial data
-ambd_data %>% mutate(longitude = st_coordinates(.)[,1],
+norbo_data %>% mutate(longitude = st_coordinates(.)[,1],
                      latitude = st_coordinates(.)[,2]) %>% 
   st_drop_geometry() %>% 
-  write_csv("data/ebird/ebd_ambd_final_20220106.csv", na = "")
-sagr_data %>% mutate(longitude = st_coordinates(.)[,1],
-                     latitude = st_coordinates(.)[,2]) %>% 
-  st_drop_geometry() %>% 
-  write_csv("data/ebird/ebd_sagr_final_20220106.csv", na = "")
-bobo_data %>% mutate(longitude = st_coordinates(.)[,1],
-                     latitude = st_coordinates(.)[,2]) %>% 
-  st_drop_geometry() %>% 
-  write_csv("data/ebird/ebd_bobo_final_20220106.csv", na = "")
+  write_csv("data/ebird/ebd_norbo_final_20230127.csv", na = "")
 
 #----------------
 # Save shapefiles and non-spatial data truncated by date
 ambd_yr <- ambd_data %>% mutate(longitude = st_coordinates(.)[,1],
                                 latitude = st_coordinates(.)[,2]) %>% 
   filter(year >= 2014, year <= 2018) 
+
 ambd_yr %>% st_write(dsn = 'data/ebird/ambd-2014-2018-shp', layer = "ambd-2014-2018",
                      driver = 'ESRI Shapefile', append = FALSE)
+
 ambd_yr %>% st_drop_geometry() %>% write_csv("data/ebird/ebd_ambd_2014_2018.csv", na = "")
 
-sagr_yr <- sagr_data %>% mutate(longitude = st_coordinates(.)[,1],
-                                latitude = st_coordinates(.)[,2]) %>% 
-  filter(year >= 2014, year <= 2018) 
-sagr_yr %>% st_write(dsn = 'data/ebird/sagr-2014-2018-shp', layer = "sagr-2014-2018",
-                     driver = 'ESRI Shapefile', append = FALSE)
-sagr_yr %>% st_drop_geometry() %>% write_csv("data/ebird/ebd_sagr_2014_2018.csv", na = "")
 
-bobo_yr <- bobo_data %>% mutate(longitude = st_coordinates(.)[,1],
-                                latitude = st_coordinates(.)[,2]) %>% 
-  filter(year >= 2014, year <= 2018) 
-bobo_yr %>% st_write(dsn = 'data/ebird/bobo-2014-2018-shp', layer = "bobo-2014-2018",
-                     driver = 'ESRI Shapefile', append = FALSE)
-bobo_yr %>% st_drop_geometry() %>% write_csv("data/ebird/ebd_bobo_2014_2018.csv", na = "")
