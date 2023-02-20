@@ -10,8 +10,11 @@ ebd <- auk_ebd("data/ebird/ebd_US_norbob_relDec-2022/ebd_US_norbob_relDec-2022.t
 # Filter based on survey protocol and to only include complete check lists
 ebd_filters <- ebd %>% 
   auk_country(country = 'United States') %>% 
+  auk_bbox(c(-105.8, 25.8, -69.9, 45.9)) %>% # lng_min, lat_min, lng_max, lat_max
   auk_protocol(protocol = c("Stationary", "Traveling")) %>% 
-  auk_complete()
+  auk_distance(distance = c(0, 5)) %>%
+  auk_duration(duration = c(0, 60*5)) %>%
+  auk_complete() 
 
 # Run filtering
 f_ebd <- file.path("data/ebird/ebd_filtered/ebd_US_norbob_us_filtered.txt")
@@ -19,7 +22,7 @@ f_sampling <- file.path("data/ebird/ebd_filtered/ebd_checklists_us_filtered.txt"
 
 # only run if the files don't already exist
 if (!file.exists(f_ebd)) {
-  auk_filter(ebd_filters, file = f_ebd, file_sampling = f_sampling)
+  auk_filter(ebd_filters, file = f_ebd, file_sampling = f_sampling, overwrite = TRUE)
 }
 
 # reimport and "zero-fill" to get detected/not-detected dataset for all three species
