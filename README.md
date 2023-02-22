@@ -2,6 +2,12 @@
 
 This is a working repository for the analysis of Bobwhite quail (*Colinus virginianus*) habitat suitability and connectivity.
 
+**Repository maintainer(s):**
+
+Patrick Freeman, Scientist, Conservation Science Partners, Inc.
+
+Justin Suraci, Lead Scientist, Conservation Science Partners, Inc.
+
 ------------------------------------------------------------------------
 
 **For repository contributors:**
