@@ -42,3 +42,5 @@ code/.DS_Store
 
 # Folders to ignore 
 data/
+gcs-key.json
+pf-bobwhite-rstudio-vm-key.json
