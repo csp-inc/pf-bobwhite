@@ -48,6 +48,7 @@ r_5km <-disagg(r_10km, fact = 2)
 
 ### Mask to the original spatial boundary of Sprih's grid 
 r_5km_mask <- terra::mask(r_5km, vect(grid_10))
+r_10km_mask <- terra::mask(r_10km, vect(grid_10))
 
 # Plot test area to confirm behavior  ------------------------------------------------
 
@@ -63,9 +64,11 @@ test_crop_poly <- as.polygons(test_crop, dissolve=F) %>%
   dplyr::rename(grid_id_10km = lyr.1) %>%
   dplyr::mutate(grid_id_5km = row_number(.))
 
-# Convert masked 5km raster to polygons  ------------------------------------------------
+# Convert masked 5km and 10km rasters to polygons  ------------------------------------------------
 
 grid_5km_poly <- as.polygons(r_5km_mask, dissolve=F)
+grid_10km_poly <- as.polygons(r_10km_mask, dissolve=F)
+
 
 ### Add columns to identify the 10km grid cell and 5km grid cell that each cell belongs to
 grid_5km_poly_sf <- grid_5km_poly %>%
@@ -73,9 +76,15 @@ grid_5km_poly_sf <- grid_5km_poly %>%
   dplyr::rename(grid_id_10km = lyr.1) %>%
   dplyr::mutate(grid_id_5km = row_number(.))
 
+grid_10km_poly_sf <- grid_10km_poly %>%
+  st_as_sf() %>%
+  dplyr::rename(grid_id_10km = lyr.1)
+
 ### View to check 
 grid_5km_poly_sf %>% dplyr::arrange(., desc(grid_id_10km)) %>% View()
 
-# Write polygon to geopackage  ------------------------------------------------
+# Write polygon files to geopackage  ------------------------------------------------
 
 st_write(grid_5km_poly_sf, "data/pf_5km_sampling_grid.gpkg")
+st_write(grid_10km_poly_sf, "data/pf_10km_sampling_grid.gpkg")
+

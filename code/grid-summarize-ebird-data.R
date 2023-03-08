@@ -64,5 +64,44 @@ nrow(sites_in_grid_study)
 ftable(sites_in_grid_study$species_observed)
 ### 400,746 non-detections, 688,813 detections - not bad! 
 
+### Write out to csv 
+#sites_in_grid_study %>%
+#  dplyr::select(-geometry) %>%
+#  write_csv("data/pf_ebird_gridassigned.csv")
+
 ### Plot the detection/non-detection points on top of the study sites 
 ggplot(states_sub) + geom_sf() + geom_sf(data=sites_in_grid_study, aes(color=species_observed), size=0.5) + scale_color_viridis_d(alpha=0.25) + coord_sf()
+
+
+# Summarize number of sampling sites per grid cell ------------------------
+
+### At 10km resolution 
+ebird_sample_count <- count(as_tibble(sites_in_grid_study), grid_id_10km) %>%
+  as.data.frame() %>%
+  dplyr::mutate(nsite=n)
+
+grid_sample_count <- left_join(grid_5km, ebird_sample_count, by=c("grid_id_10km"))
+
+### Plot sampling intensity -- looks pretty sparse in large parts of the grid -- but it is what it is 
+ggplot() + geom_sf(data=grid_sample_count, aes(fill=nsite), color=NA) + scale_fill_viridis_c() + coord_sf()
+
+### List of 5km grid cells their number of detections/non-detections
+positive_detection_5km <- sites_in_grid_study %>%
+  dplyr::filter(species_observed == TRUE)
+
+no_detection_5km <- sites_in_grid_study %>%
+  dplyr::filter(species_observed == FALSE)
+
+positive_detection_5km_count <- count(as_tibble(positive_detection_5km), grid_id_5km) %>%
+  dplyr::rename(detections = n)
+no_detection_5km_count <- count(as_tibble(no_detection_5km), grid_id_5km) %>%
+  dplyr::rename(nondetections=n)
+
+### join detection/non-detection data
+detection_join <- full_join(positive_detection_5km_count, no_detection_5km_count, by="grid_id_5km")
+
+### join back to the original spatial grid 
+detection_join_sf <- full_join(grid_5km, detection_join, by="grid_id_5km")
+
+### map out detections
+ggplot(detection_join_sf) + geom_sf(aes(fill=detections), lwd=0) + scale_fill_stepsn(n.breaks=9, colours=viridis::viridis(9)) + coord_sf()
