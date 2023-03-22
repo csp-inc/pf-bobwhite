@@ -105,3 +105,53 @@ ggplot(data = df_nobo_sp) +
         legend.text = element_text(colour="black",size=12),
         axis.text.y = element_text(colour="black",size=12), legend.position = c(0.9, 0.1))
 
+
+
+### Load sampling grid for model to use to clip the county dataset 
+model_states <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/bobwhite_model_states.gpkg") %>%
+  st_union()
+
+
+### Reproject the county-level average farm size vector to EPSG 5070
+df_nobo_sp <- df_nobo_sp %>% 
+  st_transform(., crs=st_crs(model_states))
+
+### Clip to study area 
+prop_crp_model_area <- st_intersection(df_nobo_sp, model_states) %>%
+  st_transform(crs=5070) %>%
+  st_cast(., "POLYGON") ### have to cast to polygon for this to work 
+
+# ggplot(data = prop_crp_model_area) +
+#   geom_sf() +
+#   geom_sf(data = prop_crp_model_area, aes(fill = PercentCRP)) +
+#   scale_fill_gradientn(colours = rev(rainbow(7)),
+#                        breaks = seq(0,40,1),
+#                        trans = "identity") +  
+#   guides(fill=guide_legend(title="Percent CRP")) +
+#   ggtitle("Percent of each state in CRP as of Jan. 2020") +
+#   theme(panel.grid.major=element_blank(),strip.background = element_blank(),
+#         strip.text.x = element_text(colour="black",size=12),
+#         strip.text.y = element_text(colour="black",size=12),
+#         panel.grid.minor=element_blank(),
+#         #panel.background = element_rect(fill = "white"),
+#         axis.line=element_line("black"),
+#         axis.ticks=element_line("black"),
+#         axis.text.x = element_text(colour="black",size=12),
+#         axis.title.y=element_text(colour="black",size=12),
+#         axis.title.x=element_text(colour="black",size=12),
+#         legend.title = element_text(colour="black",size=12),
+#         legend.text = element_text(colour="black",size=12),
+#         axis.text.y = element_text(colour="black",size=12), legend.position = c(0.9, 0.1))
+
+
+### Create template raster with same extent as polygons at 5km resolution 
+r <- raster(prop_crp_model_area, res = 5000)
+
+### Rasterize the polygons using fasterize -- no 'mean' function available so chose max
+r <- rast(fasterize(prop_crp_model_area, r, field = "PercentCRP", fun="max"))
+
+
+(def <- ggplot() +
+    geom_spatraster(data = r) + 
+    labs(title="Percent of county area enrolled in Bobwhite+ CRP (2020)",
+         subtitle="Not normalized by county area"))
