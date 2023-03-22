@@ -77,7 +77,8 @@ r <- rast(fasterize(farm_size_model_area, r, field = "Value", fun="max"))
 ### Check alignment with model sampling grid 
 grid5km <- st_read("/Users/patrickfreeman-csp/Documents/GitHub/pf-bobwhite/data/pf_5km_sampling_grid.gpkg")
 
-def <- ggplot() +
+(def <- ggplot() +
   geom_spatraster(data = r) + 
-  geom_sf(data=grid5km, fill="NA")
-### Looks generally ok but there are some issues/non-overlapping areas.
+  labs(title="Average farm size by county (2017)",
+       subtitle="Not normalized by county area"))
+
