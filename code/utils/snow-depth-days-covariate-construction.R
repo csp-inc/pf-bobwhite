@@ -47,5 +47,12 @@ t <- sum(reclassed_stack)
 
 ### Write to file 
 writeRaster(t, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/snodas_days_snowdepth_2017_WGS84.tif")
-
-
+# 
+# rast_to_plot <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/snodas_days_snowdepth_2017_WGS84.tif")
+# 
+# ggplot() +
+#   geom_spatraster(data = rast_to_plot, aes(fill = sum)) +
+#   # You can use coord_sf
+#   coord_sf(crs = 5070) +
+#   scale_fill_hypso_c() + 
+#   labs(title="SNODAS: Days with snow depth >2.5 cm in 2017")
