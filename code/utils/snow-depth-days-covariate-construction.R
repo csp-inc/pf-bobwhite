@@ -22,7 +22,7 @@ library(terra)
 library(tidyverse)
 library(sf)
 
-nc_list <- list.files("/Users/patrickfreeman-csp/Desktop/SNODAS_DATA_DIR/nc_2018", pattern="*.nc", full.names = T)
+nc_list <- list.files("/Users/patrickfreeman-csp/Desktop/SNODAS_DATA_DIR/nc_2021", pattern="*.nc", full.names = T)
 
 #import all raster files in folder using lapply
 allrasters <- lapply(nc_list, rast)
@@ -47,7 +47,7 @@ reclassed_stack <- rast(reclassed)
 t <- sum(reclassed_stack)
 
 ### Write to file 
-writeRaster(t, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/snodas_days_snowdepth_2018_WGS84.tif")
+writeRaster(t, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/snodas_days_snowdepth_2021_WGS84.tif")
 # 
 # rast_to_plot <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/snodas_days_snowdepth_2017_WGS84.tif")
 # 
