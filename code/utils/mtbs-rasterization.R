@@ -97,10 +97,10 @@ out_rasters <- mtbs_split %>%
   map(rasterize_burn_perimeters)
 
 ### Limit to last 15 years (2007-2021)
-out_rasters_1721 <- out_rasters[2:16]
+out_rasters_0721 <- out_rasters[2:16]
 
 ### Stack rasters
-stack <- terra::rast(out_rasters_1721)
+stack <- terra::rast(out_rasters_0721)
 
 ### Sum rasters to get burn frequency over the last 15 years for each pixel
 burn_freq <- sum(stack, na.rm=T) 
