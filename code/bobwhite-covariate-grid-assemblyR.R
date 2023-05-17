@@ -1,10 +1,29 @@
+## ---------------------------
+##
+## Script name: bobwhite-covariate-grid-assembly.R
+##
+## Purpose of script: A script to fully assemble the covariates for the bobwhite SDM for each 5km grid cell. This is a piecemeal approach that combines exxtractions directly from raters and compiling pre-extracted csvs (exported from GEE) to contend with issues related to file size. Likely will revisit if time allows. 
+##
+## Author: Patrick T. Freeman
+##
+## Date Created: 2023-05-16
+## Date last updated: 2023-05-16
+##
+## Email contact: patrick[at]csp-inc.org
+##
+## ---------------------------
+##
+## Notes: 
+##  
+
+
 library(terra)
 library(sf)
 library(tidyverse)
 library(purrr)
 library(janitor)
 
-#### Write function to perform extraction when provided a raster 
+#### Write function to perform extraction when provided a raster - transforms input vector to match raster CRS
 extractVals <- function(raster){
   pts <- grid5k_centroids
   rast_crs <-st_crs(raster)
@@ -25,15 +44,20 @@ grid5k_centroids <- st_centroid(grid5k)
 ### Load covariate rasters 
 avg_farm_size <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/NASS_CRP/nass_2017_average_farm_size.tif")
 names(avg_farm_size) <- "avg_farm_size_2017"
+### Replace NA values with 0 for now
+avg_farm_size <- ifel(is.na(avg_farm_size), 0, avg_farm_size)
+farm_size_extract <- extractVals(avg_farm_size)
+
 
 prop_county_crp <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/NASS_CRP/proportion-county-land-crp-2020.tif")
 names(prop_county_crp) <- "prop_county_crp_2020"
+### Replace NA values with 0 for now
+prop_county_crp <- ifel(is.na(prop_county_crp), 0, prop_county_crp)
+prop_county_crp_extract <- extractVals(prop_county_crp)
+
 
 snodas <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/SNODAS/snodas-snowdays-mean1621-wgs84.tif")
 names(snodas) <- "snowdays_gt1pt5cm_1621"
-
-farm_size_extract <- extractVals(avg_farm_size)
-prop_county_crp_extract <- extractVals(prop_county_crp)
 snodas_extract <- extractVals(snodas)
 
 
@@ -52,18 +76,32 @@ gradient_names <- gradient_rasts %>%
   map(getLayerNames)
 
 gradient_rast_stack <- rast(gradient_rasts)
+gradient_rast_stack <- ifel(gradient_rast_stack == 100, NA, gradient_rast_stack)
 names(gradient_rast_stack) <- gradient_names
 
 rap_gradient_extract <- extractVals(gradient_rast_stack)
 
+rap_gradient_extract_clean <- as.data.frame(rap_gradient_extract) %>% 
+  mutate(dubious_flag=
+         case_when(
+           RAP_AFG_1621_mean_surfaceroughness>60 | 
+             RAP_BGR_1621_mean_surfaceroughness >60 | 
+             RAP_PFG_1621_mean_surfaceroughness >60 | 
+             RAP_SHR_1621_mean_surfaceroughness >60 | 
+             RAP_TRE_1621_mean_surfaceroughness >60 ~ "dubious roughness value",
+           TRUE ~ "not dubious roughness value"))
+
+
+
 #### Extract Climate data 
-climate <- rast("/Volumes/GoogleDrive/My Drive/GEE-exports/climate-1621-mean-smoothed270m.tif")
+climate <- rast("/Users/patrickfreeman-csp/Downloads/climate-1621-mean-smoothed270m.tif")
 climate_extract <- extractVals(climate)
 
 
 ### Burn Frequency 
 burn_freq <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/MTBS_burnfrequency_0721_270m.tif")
 burnfreq_extract <- extractVals(burn_freq) %>%
+  as.data.frame() %>% 
   dplyr::rename(mtbs_burn_freq_0721 = sum)
 
 ### Get the GEE-based extractions for LUI and RAP proportional cover and Ag proportional cover
@@ -79,25 +117,37 @@ agpcov_extract <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJD
 rap_extract <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/RAP_5km_smooth.csv") %>%
 dplyr::select(-c(`.geo`, `system:index`))
 
+
+### Finally extract terrain covariates
+terrain_extract <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/terrain_5km_smooth.csv") %>%
+  dplyr::select(-c(`.geo`, `system:index`))
+
+
 ### Full join all of the extracts together from this batch of covariates
-extract_out <- as_tibble(full_join(as.data.frame(rap_gradient_extract), as.data.frame(climate_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
+extract_out <- as_tibble(full_join(as.data.frame(rap_gradient_extract_clean), as.data.frame(climate_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
   full_join(., as.data.frame(snodas_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
   full_join(., as.data.frame(prop_county_crp_extract), by=c("fid", "grid_id_10", "grid_id_5k"))) %>%
   full_join(., as.data.frame(farm_size_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
   full_join(., as.data.frame(burnfreq_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
   full_join(., lui_extract, by=c("fid", "grid_id_10", "grid_id_5k")) %>%
   full_join(., agpcov_extract, by="grid_id_5k") %>%
-  full_join(., rap_extract, by="grid_id_5k")
-  
+  full_join(., rap_extract, by="grid_id_5k") %>%
+  full_join(., terrain_extract, by="grid_id_5k")
+
+
+### Join back to grid for visualization checks - full version with NA values
+grid5k_cov_join_wNA <- full_join(grid5k, extract_out, by=c("grid_id_5k", "grid_id_10", "fid")) %>%
+  dplyr::mutate(fid = as.integer(fid)) %>%
+  dplyr::select(-fid)
+
+st_write(grid5k_cov_join_wNA , "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/grid_5km_covariatejoinwNA.gpkg")
+
 ### Remove any rows that have any variable with no data...
 extract_out_complete_cases <- extract_out %>%
   drop_na()
 
-### Join back to grid for visualization checks and clean up 
-grid5k_cov_join <- left_join(extract_out_complete_cases, grid5k, by="grid_id_5k") %>%
-  dplyr::select(-fid.y, grid_id_10.y) %>%
-  dplyr::rename(fid = fid.x,
-                grid_id_10 = grid_id_10.x) %>% 
-  st_as_sf()
+### Join back to grid for visualization checks - complete cases only 
+grid5k_cov_join <- left_join(extract_out_complete_cases, grid5k, by=c("grid_id_5k", "grid_id_10", "fid"))
 
-st_write(grid5k_cov_join, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/grid_5km_covariatejoin.gpkg")
+
+write_csv(grid5k_cov_join, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/grid_5km_covariatejoin.csv")
