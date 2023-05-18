@@ -7,7 +7,7 @@
 ## Author: Patrick T. Freeman
 ##
 ## Date Created: 2023-05-16
-## Date last updated: 2023-05-16
+## Date last updated: 2023-05-18
 ##
 ## Email contact: patrick[at]csp-inc.org
 ##
@@ -22,6 +22,7 @@ library(sf)
 library(tidyverse)
 library(purrr)
 library(janitor)
+library(smoothr)
 
 #### Write function to perform extraction when provided a raster - transforms input vector to match raster CRS
 extractVals <- function(raster){
@@ -45,19 +46,17 @@ grid5k_centroids <- st_centroid(grid5k)
 avg_farm_size <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/NASS_CRP/nass_2017_average_farm_size.tif")
 names(avg_farm_size) <- "avg_farm_size_2017"
 ### Replace NA values with 0 for now
-avg_farm_size <- ifel(is.na(avg_farm_size), 0, avg_farm_size)
 farm_size_extract <- extractVals(avg_farm_size)
 
 
 prop_county_crp <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/NASS_CRP/proportion-county-land-crp-2020.tif")
 names(prop_county_crp) <- "prop_county_crp_2020"
 ### Replace NA values with 0 for now
-prop_county_crp <- ifel(is.na(prop_county_crp), 0, prop_county_crp)
 prop_county_crp_extract <- extractVals(prop_county_crp)
 
 
 snodas <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/SNODAS/snodas-snowdays-mean1621-wgs84.tif")
-names(snodas) <- "snowdays_gt1pt5cm_1621"
+names(snodas) <- "snowdays_gt2pt5cm_1621"
 snodas_extract <- extractVals(snodas)
 
 
@@ -140,14 +139,37 @@ grid5k_cov_join_wNA <- full_join(grid5k, extract_out, by=c("grid_id_5k", "grid_i
   dplyr::mutate(fid = as.integer(fid)) %>%
   dplyr::select(-fid)
 
-st_write(grid5k_cov_join_wNA , "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/grid_5km_covariatejoinwNA.gpkg")
 
-### Remove any rows that have any variable with no data...
-extract_out_complete_cases <- extract_out %>%
-  drop_na()
+#### Load the grid that was developed by intersecting a negative 10km buffer with the original 5km grid
+neg_grid <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/grid5k_neg10kmbuffer.gpkg")
+### Get grid IDs to retain 
+neg_grid_retain <- unique(neg_grid$grid_id_5k)
 
-### Join back to grid for visualization checks - complete cases only 
-grid5k_cov_join <- left_join(extract_out_complete_cases, grid5k, by=c("grid_id_5k", "grid_id_10", "fid"))
+### Were some small artifacts to remove further
+postbuff_removal <- c(63172, 64322, 64328, 56238, 56239, 68919, 68920, 179573, 80, 102, 99)
+
+### And also some additional ones to keep 
+postbuff_keeps <- c(40011, 41181, 41183, 42353, 42354, 42355, 42356, 43523, 43526, 43525)
+
+### Now create a final vector of grid cell IDs to keep
+neg_grid_retain_1 <- c(neg_grid_retain, postbuff_keeps)
+neg_grid_retain_df <- as.data.frame(neg_grid_retain_1)
+neg_grid_retain_df_final <- neg_grid_retain_df %>%
+  dplyr::filter(!neg_grid_retain_1 %in% postbuff_removal)
 
 
-write_csv(grid5k_cov_join, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/grid_5km_covariatejoin.csv")
+### Label grid cells as within our outside of 10km buffer 
+final_grid_withcovs_wNA <- grid5k_cov_join_wNA %>%
+  dplyr::mutate(in_out_10kmbuff = case_when(
+    grid_id_5k %in% neg_grid_retain_df_final$neg_grid_retain_1 ~ "inside",
+    !grid_id_5k %in% neg_grid_retain_df_final$neg_grid_retain_1 ~ "outside"
+  )) 
+
+### Write to file as gpkg
+st_write(final_grid_withcovs_wNA , "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/covariate_assembly/grid_5km_covariatejoinwNA_neg10kmbufferlabel.gpkg")
+
+### Write to file as csv
+final_grid_withcovs_wNA %>%
+  st_drop_geometry() %>%
+  write_csv(., "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/covariate_assembly/grid_5km_covariatejoinwNA_neg10kmbufferlabel.csv")
+
