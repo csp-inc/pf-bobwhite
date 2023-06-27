@@ -4,11 +4,10 @@ library(tidyverse)
 
 # ---------- COLLECT INPUTS ---------------
 # Habitat suitability surface
-hab <- rast("data/bobwhite-sdm-final-mlra.tiff") %>% 
-  clamp(upper = 502.9)
-minmax(hab, compute = TRUE)
+hab <- rast("connectivity-data/bobwhite-sdm-final-mlra-5k.tiff") %>% 
+  clamp(upper = 495)
 # NOBO study area
-aoi <- st_read("data/bobwhite-grid-union.gpkg")
+aoi <- st_read("connectivity-data/bobwhite-grid-union.gpkg")
 
 # ------------- FUNCTIONS --------------------
 # Rescale between 0 and 1
@@ -30,11 +29,12 @@ resScale <- function(h, c){
 # Sample random points based on hab suitability value
 # mode = "advanced" codes each point with source strength value
 # mode = "pairwise" codes each point with a unique identifier
-get_points <- function(r, n, cut = 0, mode = "advanced") {
+get_points <- function(r, n, cut = 0, reassign = 0, mode = "advanced") {
   # Rescale raster to 0-1, define cut-off, and recode all NA to 0
   r <- rescale01(r)
+  r[r<cut]<-reassign
   r[is.na(r)] <- 0
-  r[r<cut]<-0
+  
   
   # Sample cells based on raster value
   cells <- sample(1:ncell(r), n, prob=r[], replace=FALSE)
@@ -57,11 +57,12 @@ get_points <- function(r, n, cut = 0, mode = "advanced") {
 # ------------- PREP OUTPUTS --------------------
 
 # Random points as sources
-ss <- get_points(hab, 5000, mode = 'pairwise')
+ss <- get_points(hab, 2000, cut = 0.01, reassign = 0.01, mode = 'pairwise')
+terra::writeRaster(ss, filename = "connectivity-data/circuitscape-inputs/source-pairwise-n2000-c01.tif")
 
 # Resistance from habitat suitability
-res <- resScale(hab, 4)
-
+res <- resScale(hab, 8)
+terra::writeRaster(ss, filename = "connectivity-data/circuitscape-inputs/resistance-ne8.tif")
 
 
 
