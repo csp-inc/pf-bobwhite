@@ -57,14 +57,14 @@ get_points <- function(r, n, cut = 0, reassign = 0, mode = "advanced") {
 # ------------- PREP OUTPUTS --------------------
 
 # Random points as sources
-ss <- get_points(hab, 2000, cut = 0.01, reassign = 0.01, mode = 'pairwise')
-terra::writeRaster(ss, filename = "connectivity-data/circuitscape-inputs/source-pairwise-n2000-c01.tif")
+ss <- get_points(hab, 1000, cut = 0.01, reassign = 0.01, mode = 'pairwise')
+terra::writeRaster(ss, filename = "connectivity-data/circuitscape-inputs/pw-ne8/source-pairwise-n1000-c01.tif", overwrite = TRUE)
 
 # Resistance from habitat suitability
 res <- resScale(hab, 8)
-terra::writeRaster(ss, filename = "connectivity-data/circuitscape-inputs/resistance-ne8.tif")
+terra::writeRaster(res, filename = "connectivity-data/circuitscape-inputs/pw-ne8/resistance-ne8.tif", overwrite = TRUE)
 
 
 
-plot(res)
+plot(hab)
 plot(ss, add = T, col = 'grey20')
