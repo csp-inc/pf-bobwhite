@@ -55,18 +55,25 @@ get_points <- function(r, n, cut = 0, reassign = 0, mode = "advanced") {
 }
 
 # ------------- PREP OUTPUTS --------------------
+# Set output folder name
+# Possible naming convention: {model type}-{resistance scaling}-{n points}
+# "pw" = pairwise; "ota" = one-to-all
+out_dir = "ota-ne8-n500" # ADJUST BASED ON MODEL TYPE
+
+# Make output folder
+if(dir.exists(paste0("connectivity-data/circuitscape-inputs/", out_dir)) == FALSE){
+  dir.create(paste0("connectivity-data/circuitscape-inputs/", out_dir))
+}
 
 # Random points as sources
-ss <- get_points(hab, 50, cut = 0.01, reassign = 0.01, mode = 'pairwise')
-terra::writeRaster(ss, filename = "connectivity-data/circuitscape-inputs/pw-ne8/source-pairwise-n50-c01.tif", overwrite = TRUE)
+ss <- get_points(r = hab, n = 500, cut = 0.01, reassign = 0.01, mode = 'advanced')
+ss_name = "source-ota-n500-c01.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
+ss_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", ss_name)
+terra::writeRaster(ss, filename = ss_path, overwrite = TRUE)
 
 # Resistance from habitat suitability
-res <- resScale(hab, 8)
-terra::writeRaster(res, filename = "connectivity-data/circuitscape-inputs/pw-ne8/resistance-ne8.tif", overwrite = TRUE)
+res <- resScale(h = hab, c = 8)
+res_name = "resistance-ne8.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
+res_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", res_name)
+terra::writeRaster(res, filename = res_path, overwrite = TRUE)
 
-
-par(mfrow = c(1,2))
-res <- resScale(hab, 4)
-plot(hab)
-plot(res)
-plot(ss, add = T, col = 'grey20')
