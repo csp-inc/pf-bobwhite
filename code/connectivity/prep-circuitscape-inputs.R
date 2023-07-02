@@ -27,7 +27,7 @@ resScale <- function(h, c){
 }
 
 # Sample random points based on hab suitability value
-# mode = "advanced" codes each point with source strength value
+# mode = "advanced" codes each point with source strength value 
 # mode = "pairwise" codes each point with a unique identifier
 get_points <- function(r, n, cut = 0, reassign = 0, mode = "advanced") {
   # Rescale raster to 0-1, define cut-off, and recode all NA to 0
@@ -45,13 +45,17 @@ get_points <- function(r, n, cut = 0, reassign = 0, mode = "advanced") {
     as.data.frame() %>%
     st_as_sf(coords = c("x", "y"), crs = st_crs(r))
   
+  points$id <- 1:nrow(points)
+  points$ss <- terra::extract(r, vect(points))[,2]
+  out_txt <- points %>% dplyr::select(id, ss) %>% st_drop_geometry() %>% as.matrix() 
+  
   # Apply values to points based on 'mode' argument
-  if(mode == "advanced") points$val <- terra::extract(r, vect(points))[,2]
-  if(mode == "pairwise") points$val <- 1:nrow(points)
+  if(mode == "pairwise") points$val <- points$id
+  if(mode == "advanced") points$val <- points$ss
   
   # Rasterize points using original grid
-  out <- terra::rasterize(vect(points), r, field = "val", background = NA)
-  return(out)
+  out_rast <- terra::rasterize(vect(points), r, field = "val", background = NA)
+  return(list(out_rast, out_txt))
 }
 
 # ------------- PREP OUTPUTS --------------------
@@ -66,10 +70,12 @@ if(dir.exists(paste0("connectivity-data/circuitscape-inputs/", out_dir)) == FALS
 }
 
 # Random points as sources
-ss <- get_points(r = hab, n = 500, cut = 0.01, reassign = 0.01, mode = 'advanced')
-ss_name = "source-ota-n500-c01.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
-ss_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", ss_name)
-terra::writeRaster(ss, filename = ss_path, overwrite = TRUE)
+ss_name = "source-ota-n500-c01" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
+ss <- get_points(r = hab, n = 500, cut = 0.01, reassign = 0.01, mode = 'pairwise')
+ss_rast_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", ss_name, ".tif")
+ss_txt_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", ss_name, ".txt")
+terra::writeRaster(ss[[1]], filename = ss_rast_path, overwrite = TRUE)
+write.table(ss[[2]], file = ss_txt_path, sep = " ", row.names = FALSE, col.names = FALSE)
 
 # Resistance from habitat suitability
 res <- resScale(h = hab, c = 8)
@@ -77,3 +83,5 @@ res_name = "resistance-ne8.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_poi
 res_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res, filename = res_path, overwrite = TRUE)
 
+plot(res)
+plot(ss[[1]], add = T, col = 'grey30')
