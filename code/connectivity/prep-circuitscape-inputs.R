@@ -3,11 +3,19 @@ library(terra)
 library(tidyverse)
 
 # ---------- COLLECT INPUTS ---------------
+# NOBO study area
+aoi <- st_read("connectivity-data/bobwhite-grid-union.gpkg") %>% 
+  st_buffer(-10000)
 # Habitat suitability surface
 hab <- rast("connectivity-data/bobwhite-sdm-final-mlra-5k.tiff") %>% 
-  clamp(upper = 495)
-# NOBO study area
-aoi <- st_read("connectivity-data/bobwhite-grid-union.gpkg")
+  clamp(upper = 495) %>% 
+  terra::mask(aoi)
+# Get MLRA regions
+mlra <- st_read("connectivity-data/MLRA_52_2022/MLRA_52.shp") %>% 
+  st_transform(st_crs(aoi)) %>% 
+  st_intersection(aoi) %>% 
+  mutate(Area_km2 = as.numeric(st_area(.))/1e6)
+
 
 # ------------- FUNCTIONS --------------------
 # Rescale between 0 and 1
@@ -19,8 +27,27 @@ rescale01 <- function(r){
 
 # Define neg exponential resistance function (from Keeley et al. 2016 Landscape Ecol)
 keeley_rescale <- function(x, c) 100-99*((1-exp(-c*x))/(1-exp(-c)))
+
+# Rescale habitat to resistance
 resScale <- function(h, c){
   h01 <- rescale01(h)
+  # Apply neg exponential conversion
+  out <- keeley_rescale(h01, c)
+  return(out)
+}
+
+# Rescale habitat to resistance by region
+resScaleRegion <- function(h, c, region = mlra){
+  # Loop through regions, clip raster to region, and apply 0-1 rescale by region
+  rastList = list()
+  for(i in 1:nrow(region)){
+    r_temp <- terra::mask(h, vect(region[i,]))
+    h01_temp <- rescale01(r_temp)
+    rastList[[i]] <- h01_temp
+  }
+  # Merge regional rasters
+  h01 <- rastList %>% terra::sprc() %>% terra::merge()
+  
   # Apply neg exponential conversion
   out <- keeley_rescale(h01, c)
   return(out)
@@ -29,7 +56,7 @@ resScale <- function(h, c){
 # Sample random points based on hab suitability value
 # mode = "advanced" codes each point with source strength value 
 # mode = "pairwise" codes each point with a unique identifier
-get_points <- function(r, n, cut = 0, reassign = 0, mode = "advanced") {
+get_points <- function(r, n, cut = 0, reassign = 0, mode = "pairwise") {
   # Rescale raster to 0-1, define cut-off, and recode all NA to 0
   r <- rescale01(r)
   r[r<cut]<-reassign
@@ -58,11 +85,48 @@ get_points <- function(r, n, cut = 0, reassign = 0, mode = "advanced") {
   return(list(out_rast, out_txt))
 }
 
+# Sample random points based on hab suitability value by region
+get_pointsRegion <- function(r, n, cut = 0, reassign = 0, region = mlra) {
+  # Rescale raster to 0-1 by region
+  rastList = list()
+  for(i in 1:nrow(region)){
+    r_temp <- terra::mask(r, vect(region[i,]))
+    h01_temp <- rescale01(r_temp)
+    rastList[[i]] <- h01_temp
+  }
+  # Merge regional rasters
+  r <- rastList %>% terra::sprc() %>% terra::merge()
+  
+  # Reassign values below cut-off if option chosen
+  r[r<cut]<-reassign
+  r[is.na(r)] <- 0
+  
+  # Sample cells based on raster value
+  cells <- sample(1:ncell(r), n, prob=r[], replace=FALSE)
+  
+  # Create points from sampled cells
+  centers <- xyFromCell(r, cells)
+  points <- centers %>%
+    as.data.frame() %>%
+    st_as_sf(coords = c("x", "y"), crs = st_crs(r))
+  
+  points$id <- 1:nrow(points)
+  points$ss <- terra::extract(r, vect(points))[,2]
+  out_txt <- points %>% dplyr::select(id, ss) %>% st_drop_geometry() %>% as.matrix() 
+  
+  # Rasterize points using original grid
+  points$val <- points$id
+  out_rast <- terra::rasterize(vect(points), r, field = "val", background = NA)
+  return(list(out_rast, out_txt))
+}
+
+
+
 # ------------- PREP OUTPUTS --------------------
 # Set output folder name
 # Possible naming convention: {model type}-{resistance scaling}-{n points}
 # "pw" = pairwise; "ota" = one-to-all
-out_dir = "ota-ne8-n500" # ADJUST BASED ON MODEL TYPE
+out_dir = "ota-ne8-n750" # ADJUST BASED ON MODEL TYPE
 
 # Make output folder
 if(dir.exists(paste0("connectivity-data/circuitscape-inputs/", out_dir)) == FALSE){
@@ -70,15 +134,16 @@ if(dir.exists(paste0("connectivity-data/circuitscape-inputs/", out_dir)) == FALS
 }
 
 # Random points as sources
-ss_name = "source-ota-n500-c01" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
-ss <- get_points(r = hab, n = 500, cut = 0.01, reassign = 0.01, mode = 'pairwise')
+ss_name = "source-ota-n750" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
+# ss <- get_points(r = hab, n = 500, cut = 0.01, reassign = 0.01, mode = 'pairwise')
+ss <- get_pointsRegion(r = hab, n = 750)
 ss_rast_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", ss_name, ".tif")
 ss_txt_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", ss_name, ".txt")
 terra::writeRaster(ss[[1]], filename = ss_rast_path, overwrite = TRUE)
 write.table(ss[[2]], file = ss_txt_path, sep = " ", row.names = FALSE, col.names = FALSE)
 
 # Resistance from habitat suitability
-res <- resScale(h = hab, c = 8)
+res <- resScaleRegion(h = hab, c = 8)
 res_name = "resistance-ne8.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
 res_path = paste0("connectivity-data/circuitscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res, filename = res_path, overwrite = TRUE)

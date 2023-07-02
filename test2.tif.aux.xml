@@ -1,0 +1,12 @@
+<PAMDataset>
+  <PAMRasterBand band="1">
+    <Description>bobwhite-sdm-final-mlra-5k</Description>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">495</MDI>
+      <MDI key="STATISTICS_MEAN">24.179903581189</MDI>
+      <MDI key="STATISTICS_MINIMUM">5.2000001526942e-12</MDI>
+      <MDI key="STATISTICS_STDDEV">63.950050651111</MDI>
+      <MDI key="STATISTICS_VALID_PERCENT">57.99</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>
