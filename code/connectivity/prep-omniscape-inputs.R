@@ -71,7 +71,7 @@ sourceRegion <- function(r, region = mlra) {
 # ------------- PREP OUTPUTS --------------------
 # Set output folder name
 # Possible naming convention: {model type}-{resistance scaling}
-out_dir = "omni-ne8" # ADJUST BASED ON MODEL TYPE
+out_dir = "omni-ne4" # ADJUST BASED ON MODEL TYPE
 
 # Make output folder
 if(dir.exists(paste0("connectivity-data/omniscape-inputs/", out_dir)) == FALSE){
@@ -80,14 +80,13 @@ if(dir.exists(paste0("connectivity-data/omniscape-inputs/", out_dir)) == FALSE){
 
 # Random points as sources
 ss_name = "source" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
-# ss <- get_points(r = hab, n = 500, cut = 0.01, reassign = 0.01, mode = 'pairwise')
-ss <- sourceRegion(r = hab)
+ss <- rescale01(hab)
 ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", ss_name, ".tif")
-terra::writeRaster(ss[[1]], filename = ss_rast_path, overwrite = TRUE)
+terra::writeRaster(ss, filename = ss_rast_path, overwrite = TRUE)
 
 
 # Resistance from habitat suitability
-res <- resScaleRegion(h = hab, c = 8)
+res <- resScale(h = hab, c = 4)
 res_name = "resistance-ne8.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res, filename = res_path, overwrite = TRUE)
