@@ -8,14 +8,18 @@ aoi <- st_read("connectivity-data/bobwhite-grid-union.gpkg") %>%
   st_buffer(-10000)
 # Habitat suitability surface
 hab <- rast("connectivity-data/bobwhite-sdm-final-mlra-5k.tiff") %>% 
-  clamp(upper = 495) %>% 
+  clamp(upper = 502) %>%
   terra::mask(aoi)
-# Get MLRA regions
-mlra <- st_read("connectivity-data/MLRA_52_2022/MLRA_52.shp") %>% 
-  st_transform(st_crs(aoi)) %>% 
-  st_intersection(aoi) %>% 
-  mutate(Area_km2 = as.numeric(st_area(.))/1e6)
+log_hab <- log(hab+1)
+# # Get MLRA regions
+# mlra <- st_read("connectivity-data/MLRA_52_2022/MLRA_52.shp") %>% 
+#   st_transform(st_crs(aoi)) %>% 
+#   st_intersection(aoi) %>% 
+#   mutate(Area_km2 = as.numeric(st_area(.))/1e6)
 
+# Inputs for conus and regional analysis
+source_input <- log_hab
+res_input <- hab
 
 # ------------- FUNCTIONS --------------------
 # Rescale between 0 and 1
@@ -71,7 +75,7 @@ sourceRegion <- function(r, region = mlra) {
 # ------------- PREP OUTPUTS --------------------
 # Set output folder name
 # Possible naming convention: {model type}-{resistance scaling}
-out_dir = "omni-ne4" # ADJUST BASED ON MODEL TYPE
+out_dir = "omni-ne8-log" # ADJUST BASED ON MODEL TYPE
 
 # Make output folder
 if(dir.exists(paste0("connectivity-data/omniscape-inputs/", out_dir)) == FALSE){
@@ -80,13 +84,13 @@ if(dir.exists(paste0("connectivity-data/omniscape-inputs/", out_dir)) == FALSE){
 
 # Random points as sources
 ss_name = "source" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
-ss <- rescale01(hab)
+ss <- rescale01(source_input)
 ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", ss_name, ".tif")
 terra::writeRaster(ss, filename = ss_rast_path, overwrite = TRUE)
 
 
 # Resistance from habitat suitability
-res <- resScale(h = hab, c = 4)
+res <- resScale(h = res_input, c = 8)
 res_name = "resistance-ne8.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res, filename = res_path, overwrite = TRUE)
