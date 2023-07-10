@@ -11,11 +11,11 @@ hab <- rast("connectivity-data/bobwhite-sdm-final-mlra-5k.tiff") %>%
   clamp(upper = 502) %>%
   terra::mask(aoi)
 log_hab <- log(hab+1)
-# # Get MLRA regions
-# mlra <- st_read("connectivity-data/MLRA_52_2022/MLRA_52.shp") %>% 
-#   st_transform(st_crs(aoi)) %>% 
-#   st_intersection(aoi) %>% 
-#   mutate(Area_km2 = as.numeric(st_area(.))/1e6)
+# # Get ARS regions 
+regions <- st_read("connectivity-data/ars_regions_5070.gpkg") %>% 
+     st_transform(st_crs(aoi)) %>% 
+     st_intersection(aoi) %>% 
+     mutate(Area_km2 = as.numeric(st_area(.))/1e6)
 
 # Inputs for conus and regional analysis
 source_input <- log_hab
@@ -41,7 +41,7 @@ resScale <- function(h, c){
 }
 
 # Rescale habitat to resistance by region
-resScaleRegion <- function(h, c, region = mlra){
+resScaleRegion <- function(h, c, region = regions){
   # Loop through regions, clip raster to region, and apply 0-1 rescale by region
   rastList = list()
   for(i in 1:nrow(region)){
@@ -57,8 +57,8 @@ resScaleRegion <- function(h, c, region = mlra){
   return(out)
 }
 
-# Sample random points based on hab suitability value by region
-sourceRegion <- function(r, region = mlra) {
+# Convert to source strength from hab suitability value by region
+sourceRegion <- function(r, region = regions) {
   # Rescale raster to 0-1 by region
   rastList = list()
   for(i in 1:nrow(region)){
@@ -75,22 +75,93 @@ sourceRegion <- function(r, region = mlra) {
 # ------------- PREP OUTPUTS --------------------
 # Set output folder name
 # Possible naming convention: {model type}-{resistance scaling}
-out_dir = "omni-ne8-log" # ADJUST BASED ON MODEL TYPE
+out_dir = "omni-ne8-log-region" # ADJUST BASED ON MODEL TYPE
 
 # Make output folder
 if(dir.exists(paste0("connectivity-data/omniscape-inputs/", out_dir)) == FALSE){
   dir.create(paste0("connectivity-data/omniscape-inputs/", out_dir))
 }
 
-# Random points as sources
-ss_name = "source" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
-ss <- rescale01(source_input)
-ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", ss_name, ".tif")
-terra::writeRaster(ss, filename = ss_rast_path, overwrite = TRUE)
+# Create source layer by region
+
+### Southeast 
+ss_name = "southeast" # set name
+ss <- sourceRegion(source_input) # apply regional source rescaling 
+southeast_v <- vect(regions %>%
+  filter(ARSregion == "southeast")) # filter to create vector of region
+ss_southeast <- crop(mask(ss, southeast_v), southeast_v) # mask and crop the source strength raster to the region
+ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", "source-", ss_name, ".tif") ## set out path
+terra::writeRaster(ss_southeast, filename = ss_rast_path, overwrite = TRUE) # write out regional source strength layer
 
 
 # Resistance from habitat suitability
-res <- resScale(h = res_input, c = 8)
-res_name = "resistance-ne8.tif" # ** ADJUST BASED ON SETTINGS IN CALL TO get_points()
+res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res_southeast <- crop(mask(res, southeast_v), southeast_v)
+res_name = "resistance-ne8-southeast.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
+terra::writeRaster(res_southeast, filename = res_path, overwrite = TRUE)
+
+### plains 
+ss_name = "plains" # set name
+ss <- sourceRegion(source_input) # apply regional source rescaling 
+plains_v <- vect(regions %>%
+                      filter(ARSregion == "plains")) # filter to create vector of region
+ss_plains <- crop(mask(ss, plains_v), plains_v) # mask and crop the source strength raster to the region
+ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", "source-", ss_name, ".tif") ## set out path
+terra::writeRaster(ss_plains, filename = ss_rast_path, overwrite = TRUE) # write out regional source strength layer
+
+
+# Resistance from habitat suitability
+res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res_plains <- crop(mask(res, plains_v), plains_v)
+res_name = "resistance-ne8-plains.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
+terra::writeRaster(res_plains, filename = res_path, overwrite = TRUE)
+
+### midwest
+ss_name = "midwest" # set name
+ss <- sourceRegion(source_input) # apply regional source rescaling 
+midwest_v <- vect(regions %>%
+                   filter(ARSregion == "midwest")) # filter to create vector of region
+ss_midwest <- crop(mask(ss, midwest_v), midwest_v) # mask and crop the source strength raster to the region
+ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", "source-", ss_name, ".tif") ## set out path
+terra::writeRaster(ss_midwest, filename = ss_rast_path, overwrite = TRUE) # write out regional source strength layer
+
+
+# Resistance from habitat suitability
+res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res_midwest <- crop(mask(res, midwest_v), midwest_v)
+res_name = "resistance-ne8-midwest.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
+terra::writeRaster(res_midwest, filename = res_path, overwrite = TRUE)
+
+### northeast
+ss_name = "northeast" # set name
+ss <- sourceRegion(source_input) # apply regional source rescaling 
+northeast_v <- vect(regions %>%
+                    filter(ARSregion == "northeast")) # filter to create vector of region
+ss_northeast <- crop(mask(ss, northeast_v), northeast_v) # mask and crop the source strength raster to the region
+ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", "source-", ss_name, ".tif") ## set out path
+terra::writeRaster(ss_midwest, filename = ss_rast_path, overwrite = TRUE) # write out regional source strength layer
+
+
+# Resistance from habitat suitability
+res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res_northeast <- crop(mask(res, northeast_v), northeast_v)
+res_name = "resistance-ne8-northeast.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
+terra::writeRaster(res_northeast, filename = res_path, overwrite = TRUE)
+
+
+### rangewide
+ss_name = "rangewide" # set name
+ss <- sourceRegion(source_input, region=aoi) # apply scaling using entire AOI of model 
+ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", "source-", ss_name, ".tif") ## set out path
+terra::writeRaster(ss, filename = ss_rast_path, overwrite = TRUE) # write out regional source strength layer
+
+
+# Resistance from habitat suitability
+res <- resScaleRegion(h = res_input, c = 8, region = aoi)
+res_name = "resistance-ne8-rangewide.tif" # ** ADJUST BASED ON MODEL STRUCTURE
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res, filename = res_path, overwrite = TRUE)
