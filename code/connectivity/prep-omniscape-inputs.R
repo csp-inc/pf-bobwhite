@@ -142,7 +142,7 @@ northeast_v <- vect(regions %>%
                     filter(ARSregion == "northeast")) # filter to create vector of region
 ss_northeast <- crop(mask(ss, northeast_v), northeast_v) # mask and crop the source strength raster to the region
 ss_rast_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", "source-", ss_name, ".tif") ## set out path
-terra::writeRaster(ss_midwest, filename = ss_rast_path, overwrite = TRUE) # write out regional source strength layer
+terra::writeRaster(ss_northeast, filename = ss_rast_path, overwrite = TRUE) # write out regional source strength layer
 
 
 # Resistance from habitat suitability
