@@ -10,7 +10,7 @@ split_poly <- function(sf_poly, n_areas){
     as_tibble() %>% setNames(c("lon","lat"))
   k_means <- kmeans(points, centers = n_areas)
   # create voronoi polygons
-  voronoi_polys <- dismo::voronoi(k_means$centers, ext = sf_poly)
+  voronoi_polys <- dismo::voronoi(k_means$centers, ext = as_Spatial(sf_poly))
   # clip to sf_poly
   crs(voronoi_polys) <- crs(sf_poly)
   voronoi_sf <- st_as_sf(voronoi_polys)

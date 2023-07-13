@@ -1,19 +1,12 @@
 library(terra)
 library(tidyverse)
 
-sa_calcs_rds <- readRDS("C:/Users/patrick/Documents/bobwhite-data/RAP_2019Tree_Sa_Chunks_230420.rds")
+sa_calcs_rds <- readRDS("C:/Users/patrick/Documents/bobwhite-data/RAP_SHR_Sa_Chunks_230504.rds")
 
 sa_calcs_rds <- sa_calcs_rds %>% transpose()
-str(sa_calcs_rds)
 
 is_ok <- sa_calcs_rds$error %>% map_lgl(is_null)
 sa_calcs_rds_ok <- sa_calcs_rds[is_ok]
-
-crop_and_mask <- function(poly) {
-  cropped_raster <- terra::crop(r, vect(poly))
-  masked_raster <- terra::mask(cropped_raster, vect(poly))
-  return(masked_raster)
-}
 
 test <- rast(sa_calcs_rds_ok$result[[50]])
 
@@ -37,11 +30,21 @@ results <- foo[[1]]
 results_trimmed <- results %>%
   map(polygonize_and_mask)
 
+convert_to_rast <- function(r){
+  name <- names(r)
+  convert <- rast(r)
+  names(r) <- name
+  return(convert)
+}
+
 ### Convert to raster collection
-rc <- sprc(results_trimmed)
-m <- mosaic(rc, fun="min")
+converted <- results %>%
+  map(convert_to_rast)
 
-m_clammped <- clamp(m, 0, 100)
+rc <- sprc(converted)
+m <- mosaic(rc, fun="mean")
 
-writeRaster(m_clammped, "C:/Users/patrick/Documents/bobwhite-data/RAP_2019Tree_Sa_mosaic.tif", overwrite=T)
+m_clamped <- clamp(m, 0, 100)
+
+writeRaster(m_clamped, "C:/Users/patrick/Documents/bobwhite-data/RAP_Tree_Sa_mosaic270m.tif", overwrite=T)
 
