@@ -7,7 +7,7 @@
 ## Author: Patrick T. Freeman
 ##
 ## Date Created: 2023-05-16
-## Date last updated: 2023-05-18
+## Date last updated: 2023-07-20
 ##
 ## Email contact: patrick[at]csp-inc.org
 ##
@@ -49,20 +49,31 @@ names(avg_farm_size) <- "avg_farm_size_2017"
 farm_size_extract <- extractVals(avg_farm_size)
 
 
-prop_county_crp <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/NASS_CRP/proportion-county-land-crp-2020.tif")
-names(prop_county_crp) <- "prop_county_crp_2020"
+prop_county_crp17 <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/NASS_CRP/proportion-county-land-crp-2017.tif")
+
+prop_county_crp20 <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/NASS_CRP/proportion-county-land-crp-2020.tif")
+
+names(prop_county_crp17) <- "prop_county_crp_2017"
+names(prop_county_crp20) <- "prop_county_crp_2020"
+
 ### Replace NA values with 0 for now
-prop_county_crp_extract <- extractVals(prop_county_crp)
+prop_county_crp17_extract <- extractVals(prop_county_crp17)
+prop_county_crp20_extract <- extractVals(prop_county_crp20)
 
 
-snodas <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/SNODAS/snodas-snowdays-mean1621-wgs84.tif")
-names(snodas) <- "snowdays_gt2pt5cm_1621"
-snodas_extract <- extractVals(snodas)
+snodas_1621 <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/SNODAS/snodas-snowdays-mean1621-wgs84.tif")
+snodas_1821 <- rast("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/SNODAS/snodas-snowdays-mean1821-wgs84.tif")
+
+names(snodas_1621) <- "snowdays_gt2pt5cm_1621"
+names(snodas_1821) <- "snowdays_gt2pt5cm_1821"
+
+snodas_extract_1621 <- extractVals(snodas_1621)
+snodas_extract_1821 <- extractVals(snodas_1821)
 
 
 ### Assemble and extract the gradient metrics
 
-gradient_rast_files <- list.files("/Users/patrickfreeman-csp/Downloads/RAP_Gradient_Rasters/", pattern=".tif", full.names=T)
+gradient_rast_files <- list.files("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/RAP_gradients", pattern=".tif", full.names=T)
 #import all raster files in folder using lapply
 gradient_rasts <- lapply(gradient_rast_files , rast)
 
@@ -83,18 +94,18 @@ rap_gradient_extract <- extractVals(gradient_rast_stack)
 rap_gradient_extract_clean <- as.data.frame(rap_gradient_extract) %>% 
   mutate(dubious_flag=
          case_when(
-           RAP_AFG_1621_mean_surfaceroughness>60 | 
-             RAP_BGR_1621_mean_surfaceroughness >60 | 
-             RAP_PFG_1621_mean_surfaceroughness >60 | 
-             RAP_SHR_1621_mean_surfaceroughness >60 | 
-             RAP_TRE_1621_mean_surfaceroughness >60 ~ "dubious roughness value",
+          # RAP_AFG_1621_mean_surfaceroughness>60 | 
+             #RAP_BGR_1621_mean_surfaceroughness >60 | 
+             RAP_PFG_1821_mean_surfaceroughness >60 | 
+             #RAP_SHR_1621_mean_surfaceroughness >60 | 
+             RAP_TRE_1821_mean_surfaceroughness >60 ~ "dubious roughness value",
            TRUE ~ "not dubious roughness value"))
 
 
 
 #### Extract Climate data 
-climate <- rast("/Users/patrickfreeman-csp/Downloads/climate-1621-mean-smoothed270m.tif")
-climate_extract <- extractVals(climate)
+climate_1821 <- rast("/Volumes/GoogleDrive/My Drive/GEE-exports/climate-1821-mean-smoothed1000m.tif")
+climate_extract <- extractVals(climate_1821)
 
 
 ### Burn Frequency 
@@ -104,32 +115,33 @@ burnfreq_extract <- extractVals(burn_freq) %>%
   dplyr::rename(mtbs_burn_freq_0721 = sum)
 
 ### Get the GEE-based extractions for LUI and RAP proportional cover and Ag proportional cover
-lui_extract <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/bobwhite-5kmgrid-CSP-LUI-extraction-230424.csv") %>%
+lui_extract <- read_csv("/Volumes/GoogleDrive/My Drive/GEE-exports/LUI_5km_smooth_230719.csv") %>%
   rename(Ag_LUI_5km = Ag_5km,
          Energy_LUI_5km = Energy_5km,
          Transport_LUI_5km = Transport_5km,
          Urban_LUI_5km = Urban_5km)
 
-agpcov_extract <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/AgPCov_5km_1619.csv") %>%
+agpcov_extract <- read_csv("/Volumes/GoogleDrive/My Drive/GEE-exports/RowcropPCov_5km_1619_230719.csv") %>%
   dplyr::select(grid_id_5k, NLCD_1619_mean_rowcropPcov)
 
-rap_extract <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/RAP_5km_smooth.csv") %>%
-dplyr::select(-c(`.geo`, `system:index`))
+pasturepcov_extract <- read_csv("/Volumes/GoogleDrive/My Drive/GEE-exports/PasturePCov_5km_1619_230719.csv") %>% 
+  dplyr::select(grid_id_5k, NLCD_1619_mean_pasturePcov)
 
+rap_extract <- read_csv("/Volumes/GoogleDrive/My Drive/GEE-exports/RAP_1821_5km_smooth_230719.csv") 
 
 ### Finally extract terrain covariates
-terrain_extract <- read_csv("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/terrain_5km_smooth.csv") %>%
-  dplyr::select(-c(`.geo`, `system:index`))
+terrain_extract <- read_csv("/Volumes/GoogleDrive/My Drive/GEE-exports/terrain_5km_smooth_230719.csv") 
 
 
 ### Full join all of the extracts together from this batch of covariates
-extract_out <- as_tibble(full_join(as.data.frame(rap_gradient_extract_clean), as.data.frame(climate_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
-  full_join(., as.data.frame(snodas_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
-  full_join(., as.data.frame(prop_county_crp_extract), by=c("fid", "grid_id_10", "grid_id_5k"))) %>%
+extract_out <- as_tibble(full_join(as.data.frame(rap_gradient_extract_clean), as.data.frame(climate_extract), by=c("fid", "grid_id_10", "grid_id_5k"))) %>%
+  full_join(., as.data.frame(snodas_extract_1821), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
+  full_join(., as.data.frame(prop_county_crp20_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
   full_join(., as.data.frame(farm_size_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
   full_join(., as.data.frame(burnfreq_extract), by=c("fid", "grid_id_10", "grid_id_5k")) %>%
-  full_join(., lui_extract, by=c("fid", "grid_id_10", "grid_id_5k")) %>%
+  full_join(., lui_extract, by=c("grid_id_5k")) %>%
   full_join(., agpcov_extract, by="grid_id_5k") %>%
+  full_join(., pasturepcov_extract, by="grid_id_5k") %>%
   full_join(., rap_extract, by="grid_id_5k") %>%
   full_join(., terrain_extract, by="grid_id_5k")
 
@@ -166,10 +178,10 @@ final_grid_withcovs_wNA <- grid5k_cov_join_wNA %>%
   )) 
 
 ### Write to file as gpkg
-st_write(final_grid_withcovs_wNA , "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/covariate_assembly/grid_5km_covariatejoinwNA_neg10kmbufferlabel.gpkg")
+st_write(final_grid_withcovs_wNA , "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/covariate_assembly/grid_5km_covariatejoinwNA_neg10kmbufferlabel_230720.gpkg", append=F)
 
 ### Write to file as csv
 final_grid_withcovs_wNA %>%
   st_drop_geometry() %>%
-  write_csv(., "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/covariate_assembly/grid_5km_covariatejoinwNA_neg10kmbufferlabel.csv")
+  write_csv(., "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/02-outputs/covariate_assembly/grid_5km_covariatejoinwNA_neg10kmbufferlabel-230720.csv")
 
