@@ -65,8 +65,17 @@ sno_files <- list.files("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhez
 #import all raster files in folder using lapply
 allrasters <- lapply(sno_files, rast)
 
+### Just rasters from 2018-2021
+allrasters_1821 <- allrasters[3:6]
+
+### Stack rasters from 2018-2021/all years 
 allrasters_stacked <- rast(allrasters)
+allrasters_1821_stacked <- rast(allrasters_1821)
+
+### Calculate mean across raster stack
 allrasters_mean <- mean(allrasters_stacked, na.rm=T)
+allrasters_1821_mean <- mean(allrasters_1821_stacked, na.rm=T)
+
 
 ### Prep the mask 
 
@@ -79,9 +88,17 @@ model_states <- st_read("/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhez
 area_thresh <- units::set_units(5000, km^2)
 p_dropped <- drop_crumbs(model_states, threshold = area_thresh) %>%
   st_cast(., "POLYGON") %>%
-  st_transform(., crs=st_crs(allrasters_mean))
+  st_transform(., crs=st_crs(allrasters_1821_mean))
 
 allrasters_mean_masked <- terra::mask(allrasters_mean, vect(p_dropped))
+allrasters_1821_mean_masked <- terra::mask(allrasters_1821_mean, vect(p_dropped))
+
+
 allrasters_mean_cropped <- terra::crop(allrasters_mean_masked, vect(p_dropped))
+allrasters_1821_mean_cropped <- terra::crop(allrasters_1821_mean_masked, vect(p_dropped))
+
+
 writeRaster(allrasters_mean_cropped, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/SNODAS/snodas-snowdays-mean1621-wgs84.tif")
+
+writeRaster(allrasters_1821_mean_cropped, "/Volumes/GoogleDrive/.shortcut-targets-by-id/1oJ6TJDhezsMmFqpRtiCxuKU5wNSq4CF6/PF Bobwhite/04_Methods_Analysis/01-processed-data/00_covariates/SNODAS/snodas-snowdays-mean1821-wgs84.tif")
                                       
