@@ -16,7 +16,7 @@ This repository contains the scripts and workflows used in a collaboration betwe
 
 The Northern Bobwhite, despite substantial monitoring and conservation efforts, continues to face population declines across its range largely due to habitat fragmentation and degradation. Habitat fragmentation can also compromise landscape-scale connectivity, which supports important population processes including dispersal, migration, gene flow, and range shifts under climate change. Maintaining and enhancing existing areas of suitable habitat and high connectivity, both at the regional and range-wide scales, is thus an important pillar of a multi-pronged strategy for reversing bobwhite declines. 
 
-[A full Technical Report that includes additional methodological details is available in a Google Cloud Storage bucket](https://storage.cloud.google.com/pf-bobwhite-deliverables/00-FINAL-DELIVERABLES/CSP-NOBO-Connectivity-TechReport-July2023.pdf). Access can be provided upon reasonable request.
+[A full Technical Report that includes additional methodological details is available in a Google Cloud Storage bucket](https://storage.cloud.google.com/pf-bobwhite-deliverables/00-FINAL-DELIVERABLES/CSP-NOBO-Connectivity-TechReport-July2023.pdf). Access can be provided upon reasonable request. Final deliverables for this project, including rasters for the habitat suitability and connectivity models are also stored in [this bucket](https://console.cloud.google.com/storage/browser/pf-bobwhite-deliverables/00-FINAL-DELIVERABLES?project=pf-bobwhite&pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&prefix=&forceOnObjectsSortingFiltering=false).
 
 ## Analysis framework
 
