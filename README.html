@@ -504,29 +504,31 @@ EBD, we calculated the number of complete eBird checklists per 5-km x
 checklists (number of checklists per grid cell = 1-1,451) and the total
 number of northern bobwhite detections (number of detections =
 0-30).</p>
-<p><strong>The script use for preparing location data inputs is
-here:</strong></p>
+<p><strong>The script use for preparing location data inputs is here:
+xxxxxx</strong></p>
 </div>
 </div>
 <div id="environmental-covariates" class="section level4">
 <h4>Environmental Covariates</h4>
 <p>We used a suite of covariates to model the impacts of environmental
 variation and land use on habitat suitability for bobwhite (see table
-below for covariate descriptions and links to relevant scripts).</p>
+below for covariate descriptions and links to relevant scripts). A full
+description of covariates and their descriptions is available in the <a href="https://storage.cloud.google.com/pf-bobwhite-deliverables/00-FINAL-DELIVERABLES/CSP-NOBO-Connectivity-TechReport-July2023.pdf">Technical
+Report</a>.</p>
 <p><strong>Covariate tiffs and GEE-based tabular extractions are
 available in a <a href="https://console.cloud.google.com/storage/browser/pf-bobwhite-storage/02-output-data?project=pf-bobwhite&amp;pageState=(%22StorageObjectListTable%22:(%22f%22:%22%255B%255D%22))&amp;prefix=&amp;forceOnObjectsSortingFiltering=false">Google
 Cloud Storage bucket</a>.</strong></p>
 <p><strong>The script used to extract covariate values to 5-km grid
 cells and assemble them for habitat suitability modeling is
 here:</strong> <a href="https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-covariate-grid-assembly.R">bobwhite-covariate-grid-assembly.R</a></p>
-<table>
+<table style="width:100%;">
 <colgroup>
-<col width="15%" />
-<col width="15%" />
-<col width="23%" />
-<col width="15%" />
-<col width="15%" />
-<col width="15%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -793,6 +795,10 @@ conserving or enhancing bobwhite connectivity over large spatial scales
 (i.e., regionally rather than locally important connectivity areas).</p>
 <p><strong>The script used to prepare the source and resistance inputs
 for all connectivity models is here: <a href="https://github.com/csp-inc/pf-bobwhite/blob/main/code/connectivity/prep-omniscape-inputs.R">prep-omniscape-inputs.R</a></strong></p>
+<p>Necessary inputs (e.g. the habitat suitability model surface, the
+model AOI, and the different ARS regions) for these scripts are
+available in the <a href="https://github.com/csp-inc/pf-bobwhite/tree/main/connectivity-data">connectivity-data
+folder</a>.</p>
 <p>Source and resistance layers are placed in the <a href="https://github.com/csp-inc/pf-bobwhite/tree/main/connectivity-data/omniscape-inputs">omniscape-inputs
 folder</a>.</p>
 <p>Connectivity models were run in Julia on a Google Cloud Services
