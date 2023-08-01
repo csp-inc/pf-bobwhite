@@ -65,7 +65,7 @@ We used a suite of covariates to model the impacts of environmental variation an
 **The script used to extract covariate values to 5-km grid cells and assemble them for habitat suitability modeling is here:** [bobwhite-covariate-grid-assembly.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-covariate-grid-assembly.R)
 
 | Covariate category       | Covariate                                                                       | Source                                                                                                                                                                                                         | Date       | Native Resolution                | Script(s) used for derivation                                                                                                                                                                                                                   |
-|----------|----------|--------------------------|----------|----------|----------|
+|-----------|-----------|-----------------|-----------|-----------|-----------|
 | Topography               | Elevation                                                                       | [ALOS Global DSM (AW3D)](https://developers.google.com/earth-engine/datasets/catalog/JAXA_ALOS_AW3D30_V3_2)                                                                                                    | 2021       | 30m                              | [bobwhite-sdm-covariate-construction.ipynb](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-sdm-covariate-construction.ipynb)                                                                                                    |
 | Topography               | Slope                                                                           | [ALOS Global DSM (AW3D)](https://developers.google.com/earth-engine/datasets/catalog/JAXA_ALOS_AW3D30_V3_2)                                                                                                    | 2021       | 30m                              | [bobwhite-sdm-covariate-construction.ipynb](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-sdm-covariate-construction.ipynb)                                                                                                    |
 | Topography               | Aspect                                                                          | [ALOS Global DSM (AW3D)](https://developers.google.com/earth-engine/datasets/catalog/JAXA_ALOS_AW3D30_V3_2)                                                                                                    | 2021       | 30m                              | [bobwhite-sdm-covariate-construction.ipynb](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-sdm-covariate-construction.ipynb)                                                                                                    |
@@ -106,6 +106,10 @@ The Omniscape algorithm uses a moving window approach, iteratively treating ever
 
 **The script used to prepare the source and resistance inputs for all connectivity models is here: [prep-omniscape-inputs.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/connectivity/prep-omniscape-inputs.R)**
 
+Source and resistance layers are placed in the [omniscape-inputs folder](https://github.com/csp-inc/pf-bobwhite/tree/main/connectivity-data/omniscape-inputs).
+
 Connectivity models were run in Julia on a Google Cloud Services Virtual Machine. A Docker Image containing the necessary components for building the Omniscape container is [here](docker).
 
 Omniscape can be initialized from the command-line using the r[un_omniscape.sh bash file](run_omniscape.sh).
+
+Omniscape outputs are stored in the [omniscape-outputs folder](https://github.com/csp-inc/pf-bobwhite/tree/main/connectivity-data/omniscape-outputs).

@@ -519,14 +519,14 @@ Cloud Storage bucket</a>.</strong></p>
 <p><strong>The script used to extract covariate values to 5-km grid
 cells and assemble them for habitat suitability modeling is
 here:</strong> <a href="https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-covariate-grid-assembly.R">bobwhite-covariate-grid-assembly.R</a></p>
-<table style="width:100%;">
+<table>
 <colgroup>
-<col width="13%" />
-<col width="13%" />
-<col width="34%" />
-<col width="13%" />
-<col width="13%" />
-<col width="13%" />
+<col width="15%" />
+<col width="15%" />
+<col width="23%" />
+<col width="15%" />
+<col width="15%" />
+<col width="15%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -793,10 +793,14 @@ conserving or enhancing bobwhite connectivity over large spatial scales
 (i.e., regionally rather than locally important connectivity areas).</p>
 <p><strong>The script used to prepare the source and resistance inputs
 for all connectivity models is here: <a href="https://github.com/csp-inc/pf-bobwhite/blob/main/code/connectivity/prep-omniscape-inputs.R">prep-omniscape-inputs.R</a></strong></p>
+<p>Source and resistance layers are placed in the <a href="https://github.com/csp-inc/pf-bobwhite/tree/main/connectivity-data/omniscape-inputs">omniscape-inputs
+folder</a>.</p>
 <p>Connectivity models were run in Julia on a Google Cloud Services
 Virtual Machine. A Docker Image containing the necessary components for
 building the Omniscape container is <a href="docker">here</a>.</p>
 <p>Omniscape can be initialized from the command-line using the r<a href="run_omniscape.sh">un_omniscape.sh bash file</a>.</p>
+<p>Omniscape outputs are stored in the <a href="https://github.com/csp-inc/pf-bobwhite/tree/main/connectivity-data/omniscape-outputs">omniscape-outputs
+folder</a>.</p>
 </div>
 </div>
 </div>
