@@ -1,0 +1,214 @@
+model{
+  # Priors
+  ######## Abundance ######## 
+		mean_abun0 ~ dnorm(0,0.1)   # Global mean abundance across all states and years
+		sd_abun0 ~ dunif(0,10)
+		prec_abun0 <- 1/(sd_abun0^2)
+	   	
+		for(t in 1:nYear){
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+		abun0[m,l,t] ~ dnorm(mean_abun0,prec_abun0)}}}
+
+		mean_abun_pfg ~ dnorm(0,0.1)   
+		sd_abun_pfg ~ dunif(0,10)
+		prec_abun_pfg <- 1/(sd_abun_pfg^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+		abun_pfg[m,l] ~ dnorm(mean_abun_pfg, prec_abun_pfg)}}
+
+		mean_abun_shrub ~ dnorm(0,0.1)   
+		sd_abun_shrub ~ dunif(0,10)
+		prec_abun_shrub <- 1/(sd_abun_shrub^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+		abun_shrub[m,l] ~ dnorm(mean_abun_shrub, prec_abun_shrub)}}
+
+		mean_abun_tree ~ dnorm(0,0.1)   
+		sd_abun_tree ~ dunif(0,10)
+		prec_abun_tree <- 1/(sd_abun_tree^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_tree[m,l] ~ dnorm(mean_abun_tree, prec_abun_tree)}}
+
+		mean_abun_bgr ~ dnorm(0,0.1)   
+		sd_abun_bgr ~ dunif(0,10)
+		prec_abun_bgr <- 1/(sd_abun_bgr^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_bgr[m,l] ~ dnorm(mean_abun_bgr, prec_abun_bgr)}}
+
+		mean_abun_pfg_grad ~ dnorm(0,0.1)   
+		sd_abun_pfg_grad ~ dunif(0,10)
+		prec_abun_pfg_grad <- 1/(sd_abun_pfg_grad^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+		abun_pfg_grad[m,l] ~ dnorm(mean_abun_pfg_grad, prec_abun_pfg_grad)}}
+
+		mean_abun_tree_grad ~ dnorm(0,0.1)   
+		sd_abun_tree_grad ~ dunif(0,10)
+		prec_abun_tree_grad <- 1/(sd_abun_tree_grad^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_tree_grad[m,l] ~ dnorm(mean_abun_tree_grad, prec_abun_tree_grad)}}
+
+		mean_abun_rowcrop ~ dnorm(0,0.1)   
+		sd_abun_rowcrop ~ dunif(0,10)
+		prec_abun_rowcrop <- 1/(sd_abun_rowcrop^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){	
+    		abun_rowcrop[m,l] ~ dnorm(mean_abun_rowcrop, prec_abun_rowcrop)}}
+
+		mean_abun_energy ~ dnorm(0,0.1)   
+		sd_abun_energy ~ dunif(0,10)
+		prec_abun_energy <- 1/(sd_abun_energy^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_energy[m,l] ~ dnorm(mean_abun_energy, prec_abun_energy)}}
+
+		mean_abun_transport ~ dnorm(0,0.1)   
+		sd_abun_transport ~ dunif(0,10)
+		prec_abun_transport <- 1/(sd_abun_transport^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_transport[m,l] ~ dnorm(mean_abun_transport, prec_abun_transport)}}
+
+		mean_abun_urban ~ dnorm(0,0.1)   
+		sd_abun_urban ~ dunif(0,10)
+		prec_abun_urban <- 1/(sd_abun_urban^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_urban[m,l] ~ dnorm(mean_abun_urban, prec_abun_urban)}}
+
+		mean_abun_fire ~ dnorm(0,0.1)   
+		sd_abun_fire ~ dunif(0,10)
+		prec_abun_fire <- 1/(sd_abun_fire^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_fire[m,l] ~ dnorm(mean_abun_fire, prec_abun_fire)}}
+
+		mean_abun_crp ~ dnorm(0,0.1)   
+		sd_abun_crp ~ dunif(0,10)
+		prec_abun_crp <- 1/(sd_abun_crp^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_crp[m,l] ~ dnorm(mean_abun_crp, prec_abun_crp)}}
+
+		mean_abun_farmsize ~ dnorm(0,0.1)   
+		sd_abun_farmsize ~ dunif(0,10)
+		prec_abun_farmsize <- 1/(sd_abun_farmsize^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_farmsize[m,l] ~ dnorm(mean_abun_farmsize, prec_abun_farmsize)}}
+
+		mean_abun_tmax ~ dnorm(0,0.1)   
+		sd_abun_tmax ~ dunif(0,10)
+		prec_abun_tmax <- 1/(sd_abun_tmax^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_tmax[m,l] ~ dnorm(mean_abun_tmax, prec_abun_tmax)}}
+
+		mean_abun_prcp ~ dnorm(0,0.1)   
+		sd_abun_prcp ~ dunif(0,10)
+		prec_abun_prcp <- 1/(sd_abun_prcp^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_prcp[m,l] ~ dnorm(mean_abun_prcp, prec_abun_prcp)}}
+
+		mean_abun_snowdays ~ dnorm(0,0.1)   
+		sd_abun_snowdays ~ dunif(0,10)
+		prec_abun_snowdays <- 1/(sd_abun_snowdays^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_snowdays[m,l] ~ dnorm(mean_abun_snowdays, prec_abun_snowdays)}}
+
+		mean_abun_slope ~ dnorm(0,0.1)   
+		sd_abun_slope ~ dunif(0,10)
+		prec_abun_slope <- 1/(sd_abun_slope^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_slope[m,l] ~ dnorm(mean_abun_slope, prec_abun_slope)}}
+
+		mean_abun_aspect ~ dnorm(0,0.1)   
+		sd_abun_aspect ~ dunif(0,10)
+		prec_abun_aspect <- 1/(sd_abun_aspect^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+    		abun_aspect[m,l] ~ dnorm(mean_abun_aspect, prec_abun_aspect)}}
+
+		mean_abun_elevation ~ dnorm(0,0.1)   
+		sd_abun_elevation ~ dunif(0,10)
+		prec_abun_elevation <- 1/(sd_abun_elevation^2)
+		for(l in 1:lrr_no){
+		for(m in 1:mlra_no){
+		abun_elevation[m,l] ~ dnorm(mean_abun_elevation, prec_abun_elevation)}}		
+		
+		
+		#Detection 
+		det0 ~ dunif(0,2)
+		det_noise ~ dnorm(0, 0.01)
+		det_car ~ dnorm(0, 0.01)
+		det_dur ~ dnorm(0, 0.01)
+		det_obs ~ dnorm(0, 0.01)
+		det_eff ~ dnorm(0, 0.01)
+		det_type ~ dnorm(0, 0.01)			
+
+		# Process model with shared parameters for data sets 1 and 2
+  
+		#Process model
+		for(t in 1:nYear){
+    			for(i in 1:tot){
+   					log(lambda_overall[i,t]) <- abun0[mlra[i],lrr[i],t]  +
+									abun_pfg[mlra[i],lrr[i]] * pfg1[i] +
+									abun_pfg_grad[mlra[i],lrr[i]] * pfg_grad1[i] + 									
+                                 					abun_shrub[mlra[i],lrr[i]] * shrub1[i] + 									
+                                  					abun_tree[mlra[i],lrr[i]] * tree1[i] + 
+									abun_tree_grad[mlra[i],lrr[i]] * tree_grad1[i] +
+                                  					abun_bgr[mlra[i],lrr[i]] * bgr1[i] + 									
+                                  					abun_rowcrop[mlra[i],lrr[i]] * rowcrop1[i] + 									  
+									abun_energy[mlra[i],lrr[i]] * energy1[i] +  
+									abun_transport[mlra[i],lrr[i]] * transport1[i] +  
+                                  					abun_urban[mlra[i],lrr[i]] * urban1[i] +
+                                  					abun_fire[mlra[i],lrr[i]] * fire1[i] + 
+		                  					abun_crp[mlra[i],lrr[i]] * crp1[i] +  
+                                  					abun_farmsize[mlra[i],lrr[i]] * farmsize1[i] +
+                                  					abun_tmax[mlra[i],lrr[i]] * tmax1[i] +									 
+			           					abun_prcp[mlra[i],lrr[i]] * prcp1[i] +									
+		                  					abun_snowdays[mlra[i],lrr[i]] * snowdays1[i] +									
+                                  					abun_slope[mlra[i],lrr[i]] * slope1[i] + 
+									abun_aspect[mlra[i],lrr[i]] * aspect1[i] + 
+									abun_elevation[mlra[i],lrr[i]] * elevation1[i]
+									                                  					
+      			
+				N_overall[i,t] ~ dpois(lambda_overall[i,t])
+  		 	
+		}
+		#Observation process
+		for(i in 1:nCells_bbs){
+				for(j in 1:nStops){
+					y_bbs[i,j,t] ~ dbinom(p_bbs[i,j,t], N_bbs[i,j,t])
+					N_bbs[i,j,t] ~ dpois(lambda_count_BBS[i,j,t])
+					lambda_count_BBS[i,j,t] <- N_overall[grid_bbs_id[i,t],t]/(grid_area/BBS_survey_area) #mlra_no^2*pi/mlra_no00
+					logit(p_bbs[i,j,t]) <- det0 + 
+								det_noise * noise_bbs[i,j,t] +
+								det_car * car_bbs[i,j,t] 
+				
+			}
+		}	
+		
+		
+		#Observation process
+		for(i in 1:nCells_ebd){
+			for(j in 1:nSites_ebd){
+					y_ebd[i,j,t] ~ dbinom(p_ebd[i,j,t], N_overall[grid_ebd_id[i,t],t])
+					logit(p_ebd[i,j,t]) <- det0 + 
+								det_dur * dur_ebd[i,j,t] + 
+								det_obs * obs_ebd[i,j,t] + 
+								det_eff * eff_ebd[i,j,t] +
+								det_type * type_ebd[i,j,t] 
+				
+			}
+		}
+	}
+    
+}
