@@ -40,7 +40,7 @@ We pursued a modeling framework that integrated data from relatively intensive, 
 
 We used the [2022 release of the North American Breeding Bird Survey (BBS) dataset](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021). The raw data comes with 50 counts across 50 stops and the geographic location of the start of each route. To use all 50 point-count locations, we generated stops at 800m intervals from the starting point along each route and associated these 50 stops with their corresponding count data. Each of the stops is associated with a noise index (excluding car noise) and number of cars during survey time that can be used to model factors that impact detection probabilities.
 
-**The script use for pre-processing the BBS data is here:**
+**The script use for pre-processing the BBS data is here:** [processing-ebird-and-bbs-datasets.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/processing-ebird-and-bbs-datasets.R)
 
 *eBird Data*
 
@@ -50,13 +50,15 @@ We followed the best practices for using eBird data in scientific research descr
 
 We prepared eBird datasets using the *auk* package ([Strimas-Mackey et al. 2018](https://cornelllabofornithology.github.io/auk/)) in R. Data were first filtered to include all complete checklists. This ensures that non-detections can be inferred. We also filtered data based on observer effort to only include checklists that were \< 5 h in duration, \< 5 km in distance traveled, and performed by \< 10 observers (Schindler et al. 2022). We further applied spatial subsampling to mitigate spatial biases in sampling by dividing our dataset into two subsets: 1) checklists in which NOBO were not detected (count = 0), and 2) checklists in which at least one northern bobwhite was detected (count \>= 1). We then defined an equal area hexagonal grid across the northern bobwhite range, with \~5 km between the centroids of adjacent hexagons, using the R package *dggridR* ([Barnes and Sahr 2017](https://github.com/r-barnes/dggridR)). We randomly selected one checklist from subset 1 from each hexagon from each week in each calendar year. The resulting dataset was further processed to address class imbalance, which occurs when a species is detected on a very small proportion of checklists, resulting in vastly more non-detections than detections. We performed both undersampling and oversampling using the synthetic minority oversampling technique. This creates synthetic examples that occupy the parameter space between randomly chosen observations and their nearest neighbors so that the added observations are not direct copies but still fall within the same environmental space ([Chawla et al. 2002](https://doi.org/10.1613/jair.953)). For each checklist in this final pre-processed dataset we also retained information including the duration (in minutes), distance traveled (in km), survey type (stationary or traveling), and the number of observers that were used to model detection probabilities.
 
-**The script for pre-processing the eBird dataset is here: xxxx**
+**The script(s) for pre-processing the eBird dataset are here: \
+**[grid-summarize-ebird-data.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/grid-summarize-ebird-data.R)**\
+**[processing-ebird-and-bbs-datasets.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/processing-ebird-and-bbs-datasets.R)
 
 ##### **Input data summarization**
 
 For the BBS dataset, we calculated the number of BBS stops and the observed bobwhite abundance per 5-km x 5-km grid cell, resulting in a total of 5,078 cells containing stops (number of stops per grid cell, range = 5-17; number of birds counted per grid cell = 0-13). For the EBD, we calculated the number of complete eBird checklists per 5-km x 5-km grid cell, resulting in a total of 24,054 grid cells with reported checklists (number of checklists per grid cell = 1-1,451) and the total number of northern bobwhite detections (number of detections = 0-30).
 
-**The script use for preparing location data inputs is here: xxxxxx**
+**The script use for preparing location data inputs is here:** [processing-ebird-and-bbs-datasets.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/processing-ebird-and-bbs-datasets.R)
 
 #### Environmental Covariates
 
@@ -67,7 +69,7 @@ We used a suite of covariates to model the impacts of environmental variation an
 **The script used to extract covariate values to 5-km grid cells and assemble them for habitat suitability modeling is here:** [bobwhite-covariate-grid-assembly.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-covariate-grid-assembly.R)
 
 | Covariate category       | Covariate                                                                       | Source                                                                                                                                                                                                         | Date       | Native Resolution                | Script(s) used for derivation                                                                                                                                                                                                                   |
-|--------------------------|---------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|----------|----------|----------------|----------|----------|-------------------|
 | Topography               | Elevation                                                                       | [ALOS Global DSM (AW3D)](https://developers.google.com/earth-engine/datasets/catalog/JAXA_ALOS_AW3D30_V3_2)                                                                                                    | 2021       | 30m                              | [bobwhite-sdm-covariate-construction.ipynb](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-sdm-covariate-construction.ipynb)                                                                                                    |
 | Topography               | Slope                                                                           | [ALOS Global DSM (AW3D)](https://developers.google.com/earth-engine/datasets/catalog/JAXA_ALOS_AW3D30_V3_2)                                                                                                    | 2021       | 30m                              | [bobwhite-sdm-covariate-construction.ipynb](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-sdm-covariate-construction.ipynb)                                                                                                    |
 | Topography               | Aspect                                                                          | [ALOS Global DSM (AW3D)](https://developers.google.com/earth-engine/datasets/catalog/JAXA_ALOS_AW3D30_V3_2)                                                                                                    | 2021       | 30m                              | [bobwhite-sdm-covariate-construction.ipynb](https://github.com/csp-inc/pf-bobwhite/blob/main/code/bobwhite-sdm-covariate-construction.ipynb)                                                                                                    |
@@ -92,7 +94,11 @@ We used a suite of covariates to model the impacts of environmental variation an
 
 We used a hierarchical Bayesian framework to develop and fit a model that jointly analyzed the BBS and eBird datasets through the integration of a joint abundance likelihood process, but taking into account the different detection processes unique to each of the input datasets. The ultimate output of this suitability model was an estimate of the relative density of bobwhite in each grid cell. For a full description of the model structure is provided in the project's [Technical Report](https://storage.cloud.google.com/pf-bobwhite-deliverables/00-FINAL-DELIVERABLES/CSP-NOBO-Connectivity-TechReport-July2023.pdf).
 
-**The script used to fit the hierarchical Bayesian model is here:** xxxxx
+**The scripts used to fit the hierarchical Bayesian model are here:** \
+[IntegratedJAGSModel.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/sdm/IntegratedJAGSModel.R)\
+[model.txt](https://github.com/csp-inc/pf-bobwhite/blob/main/code/sdm/model.txt)
+
+[PredictionMap.R](https://github.com/csp-inc/pf-bobwhite/blob/main/code/sdm/PredictionMap.R)
 
 ### Connectivity Modeling
 
