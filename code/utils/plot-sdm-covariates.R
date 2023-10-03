@@ -4,6 +4,8 @@ library(terra)
 library(sf)
 library(rnaturalearth)
 library(rnaturalearthdata)
+library(colorspace)
+library(patchwork)
 
 states <- ne_states(country="United States of America", returnclass="sf")
 states_sub <- states %>%
@@ -152,6 +154,6 @@ snowdays_pl <- ggplot() +
     title.position="top",
     barwidth=25))
 
-(temp_pl + snowdays_pl + pfg_pl) / (tree_pl + sa_pl + afs_pl)
+(temp_pl +  pfg_pl) / (sa_pl + afs_pl)
 
 
