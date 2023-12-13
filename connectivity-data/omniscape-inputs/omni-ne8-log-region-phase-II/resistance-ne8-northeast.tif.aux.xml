@@ -1,0 +1,27 @@
+<PAMDataset>
+  <PAMRasterBand band="1">
+    <Description>output-data_bobwhite-habitat-suitability-final</Description>
+    <Histograms>
+      <HistItem>
+        <HistMin>1</HistMin>
+        <HistMax>100</HistMax>
+        <BucketCount>256</BucketCount>
+        <IncludeOutOfRange>1</IncludeOutOfRange>
+        <Approximate>0</Approximate>
+        <HistCounts>4|1|4|3|3|3|6|1|2|1|1|1|2|9|3|1|2|2|4|4|0|3|1|3|5|2|4|1|7|7|3|2|0|1|1|3|5|4|4|3|4|2|2|3|4|3|10|7|5|3|1|2|5|3|10|3|6|5|4|5|8|9|3|3|8|6|8|6|4|11|5|6|7|9|6|6|5|14|8|11|9|11|21|14|11|14|19|14|16|26|20|15|27|26|22|34|28|23|26|31|30|41|43|44|51|45|37|44|41|56|53|38|54|58|58|65|56|55|47|58|58|57|51|62|54|57|54|61|48|49|43|46|42|48|45|44|37|53|46|45|41|55|43|40|40|45|47|42|33|41|50|48|42|41|42|36|29|36|33|34|45|39|46|39|33|39|40|35|42|40|40|49|44|43|38|41|43|40|43|51|51|40|54|48|46|51|64|42|56|46|66|46|70|86|62|65|65|75|71|64|76|68|85|74|78|75|66|96|77|70|103|109|82|76|88|91|84|107|108|121|110|112|112|123|126|120|140|130|129|141|174|157|136|175|173|174|200|195|161|183|217|205|193|207|187|202|177|182|168|198|206|226|231|291|130|1</HistCounts>
+      </HistItem>
+    </Histograms>
+    <Metadata>
+      <MDI key="STATISTICS_COUNT">13269.000000</MDI>
+      <MDI key="STATISTICS_COVARIANCES">435.8310317107287</MDI>
+      <MDI key="STATISTICS_EXCLUDEDVALUES"></MDI>
+      <MDI key="STATISTICS_MAXIMUM">100</MDI>
+      <MDI key="STATISTICS_MEAN">76.410635772633</MDI>
+      <MDI key="STATISTICS_MEDIAN">83.694118</MDI>
+      <MDI key="STATISTICS_MINIMUM">1</MDI>
+      <MDI key="STATISTICS_SKIPFACTORX">1</MDI>
+      <MDI key="STATISTICS_SKIPFACTORY">1</MDI>
+      <MDI key="STATISTICS_STDDEV">20.87656656902</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>

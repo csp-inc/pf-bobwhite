@@ -8,7 +8,6 @@ aoi <- st_read("connectivity-data/bobwhite-grid-union.gpkg") %>%
   st_buffer(-10000)
 # Habitat suitability surface
 hab <- rast("connectivity-data/output-data_bobwhite-habitat-suitability-final.tiff") %>% 
-  clamp(upper = 502) %>%
   terra::mask(aoi)
 log_hab <- log(hab+1)
 # # Get ARS regions 
@@ -75,7 +74,8 @@ sourceRegion <- function(r, region = regions) {
 # ------------- PREP OUTPUTS --------------------
 # Set output folder name
 # Possible naming convention: {model type}-{resistance scaling}
-out_dir = "omni-ne8-log-region-phase-II" # ADJUST BASED ON MODEL TYPE
+c = 32
+out_dir = paste0("omni-ne-",c,"-log-region-phase-II") # ADJUST BASED ON MODEL TYPE
 
 # Make output folder
 if(dir.exists(paste0("connectivity-data/omniscape-inputs/", out_dir)) == FALSE){
@@ -95,9 +95,9 @@ terra::writeRaster(ss_southeast, filename = ss_rast_path, overwrite = TRUE) # wr
 
 
 # Resistance from habitat suitability
-res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res <- resScaleRegion(h = res_input, c = c, region = regions)
 res_southeast <- crop(mask(res, southeast_v), southeast_v)
-res_name = "resistance-ne8-southeast.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_name = "resistance-southeast.tif" # ** ADJUST BASED ON MODEL STRUCTURE
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res_southeast, filename = res_path, overwrite = TRUE)
 
@@ -112,9 +112,9 @@ terra::writeRaster(ss_plains, filename = ss_rast_path, overwrite = TRUE) # write
 
 
 # Resistance from habitat suitability
-res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res <- resScaleRegion(h = res_input, c = c, region = regions)
 res_plains <- crop(mask(res, plains_v), plains_v)
-res_name = "resistance-ne8-plains.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_name = "resistance-plains.tif" # ** ADJUST BASED ON MODEL STRUCTURE
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res_plains, filename = res_path, overwrite = TRUE)
 
@@ -129,9 +129,9 @@ terra::writeRaster(ss_midwest, filename = ss_rast_path, overwrite = TRUE) # writ
 
 
 # Resistance from habitat suitability
-res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res <- resScaleRegion(h = res_input, c = c, region = regions)
 res_midwest <- crop(mask(res, midwest_v), midwest_v)
-res_name = "resistance-ne8-midwest.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_name = "resistance-midwest.tif" # ** ADJUST BASED ON MODEL STRUCTURE
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res_midwest, filename = res_path, overwrite = TRUE)
 
@@ -146,9 +146,9 @@ terra::writeRaster(ss_northeast, filename = ss_rast_path, overwrite = TRUE) # wr
 
 
 # Resistance from habitat suitability
-res <- resScaleRegion(h = res_input, c = 8, region = regions)
+res <- resScaleRegion(h = res_input, c = c, region = regions)
 res_northeast <- crop(mask(res, northeast_v), northeast_v)
-res_name = "resistance-ne8-northeast.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res_name = "resistance-northeast.tif" # ** ADJUST BASED ON MODEL STRUCTURE
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res_northeast, filename = res_path, overwrite = TRUE)
 
@@ -161,8 +161,8 @@ terra::writeRaster(ss, filename = ss_rast_path, overwrite = TRUE) # write out re
 
 
 # Resistance from habitat suitability
-res <- resScaleRegion(h = res_input, c = 8, region = aoi)
-res_name = "resistance-ne8-rangewide.tif" # ** ADJUST BASED ON MODEL STRUCTURE
+res <- resScaleRegion(h = res_input, c = c, region = aoi)
+res_name = "resistance-rangewide.tif" # ** ADJUST BASED ON MODEL STRUCTURE
 res_path = paste0("connectivity-data/omniscape-inputs/", out_dir, "/", res_name)
 terra::writeRaster(res, filename = res_path, overwrite = TRUE)
 
